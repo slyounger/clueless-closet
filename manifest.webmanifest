@@ -4,8 +4,8 @@
   "description": "Daily outfit picker for a restrained wardrobe.",
   "start_url": "./index.html",
   "display": "standalone",
-  "background_color": "#fdf6e3",
-  "theme_color": "#f6d743",
+  "background_color": "#eef6fc",
+  "theme_color": "#cfe8fa",
   "icons": [
     { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
     { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
