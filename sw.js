@@ -1,5 +1,5 @@
 // Minimal service worker — makes the app installable and loads instantly offline.
-const CACHE = "clueless-closet-v3";
+const CACHE = "clueless-closet-v5";
 const ASSETS = [
   "./", "./index.html", "./style.css", "./app.js", "./wardrobe.js", "./seed.js",
   "./manifest.webmanifest", "./icon-192.png", "./icon-512.png"

@@ -139,7 +139,7 @@ function buildCandidate(weather, o, log, dislikes) {
   if (o.workout) { const ath = shoes.filter(s => s.athletic || s.sneaker || s.id === "shoe-cow"); if (ath.length) shoes = ath; }
   if (shoes.length) pieces.push(pick(shoes));
   if (raining) pieces.push(byId("outer-rain"));
-  if (!o.workout && Math.random() < 0.4) pieces.push(pick(items("hat")));
+  if (!o.workout && Math.random() < 0.18) pieces.push(pick(items("hat")));  // hat is an occasional accent, not daily
 
   pieces = pieces.filter(Boolean);
   const freshness = pieces.reduce((a, p) => a + Math.min(daysSinceWorn(p.id, log), 30), 0) / pieces.length;
@@ -194,7 +194,6 @@ function renderOutfit(o) {
   el.innerHTML = sorted.map(p => pieceRow(p, true)).join("");
   el.querySelectorAll(".swap").forEach(b =>
     b.addEventListener("click", () => { swapPiece(currentOutfit, b.dataset.cat, currentWeather, opts()); renderOutfit(currentOutfit); }));
-  document.getElementById("palette-note").textContent = "Palette: " + tonesLabel(o.pieces);
 }
 function renderWeather(w) {
   const where = w.loc ? w.loc.name : "";
