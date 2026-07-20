@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6d743">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <title>Clueless Closet</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>Clueless <span>Closet</span></h1>
+    <div id="weather" class="weather">Loading weather…</div>
+  </header>
+
+  <nav class="tabs">
+    <button id="tab-today" class="tab active">Today</button>
+    <button id="tab-calendar" class="tab">Calendar</button>
+  </nav>
+
+  <main>
+    <!-- TODAY -->
+    <section id="view-today">
+      <div class="card">
+        <div class="controls">
+          <div class="modes">
+            <button id="mode-any" class="chip active">Surprise me</button>
+            <button id="mode-sep" class="chip">Separates</button>
+            <button id="mode-dress" class="chip">Dress</button>
+          </div>
+          <label class="workout-toggle"><input type="checkbox" id="workout"> Workout day</label>
+        </div>
+
+        <div id="outfit" class="outfit"></div>
+        <div id="palette-note" class="palette-note"></div>
+
+        <div class="actions">
+          <button id="reroll" class="btn secondary">↻ Reroll</button>
+          <button id="wear" class="btn primary">Wear this</button>
+        </div>
+        <button id="feedback" class="feedback-link">👎 Something's off</button>
+        <div id="worn-msg" class="worn-msg"></div>
+      </div>
+      <p class="hint">Tap ↺ next to any piece to swap just that item.</p>
+    </section>
+
+    <!-- CALENDAR -->
+    <section id="view-calendar" class="hidden">
+      <div class="card">
+        <div class="cal-head">
+          <button id="cal-prev" class="cal-nav">‹</button>
+          <h2 id="cal-title"></h2>
+          <button id="cal-next" class="cal-nav">›</button>
+        </div>
+        <div id="calendar"></div>
+        <p class="hint">Tap any day to view, edit, or add what you wore.</p>
+      </div>
+      <div id="editor" class="card editor"></div>
+    </section>
+  </main>
+
+  <footer>As if you'd repeat an outfit.</footer>
+
+  <script src="wardrobe.js"></script>
+  <script src="seed.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
