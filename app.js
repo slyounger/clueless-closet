@@ -74,10 +74,9 @@ const items = (cat) => WARDROBE.filter(i => i.cat === cat);
 // A canLayer top is returned as a layer-role copy so it labels/sorts as a Layer; its id is unchanged for logging.
 const layerPool = () => items("layer").concat(
   WARDROBE.filter(i => i.cat === "top" && i.canLayer).map(i => ({ ...i, cat: "layer" })));
-// Shannon doesn't wear navy and black together — flag any outfit that pairs a navy core piece with a black one.
+// Shannon doesn't wear navy and black together, anywhere — flag any outfit that has both (incl. shoes/hats).
 function hasNavyBlackClash(pieces) {
-  const core = pieces.filter(p => ["top", "bottom", "layer", "dress"].includes(p.cat));
-  return core.some(p => p.navy) && core.some(p => p.black);
+  return pieces.some(p => p.navy) && pieces.some(p => p.black);
 }
 const workoutTops = () => WARDROBE.filter(i => i.cat === "workout" && i.sub === "top");
 const workoutBottoms = () => WARDROBE.filter(i => i.cat === "workout" && i.sub === "bottom");
@@ -338,6 +337,28 @@ function saveEditor(ds, extraLooks) {
   buildCalendar();
 }
 
+// ---------- backup (export / import between devices) ----------
+function exportBackup() {
+  const text = JSON.stringify({ v: 1, log: loadLog(), dislikes: loadDislikes() });
+  const done = () => { document.getElementById("backup-msg").textContent = "✓ Backup copied — paste it on your other device."; };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => { prompt("Copy this backup code:", text); done(); });
+  } else { prompt("Copy this backup code:", text); done(); }
+}
+function importBackup() {
+  const text = prompt("Paste your backup code here:");
+  if (!text) return;
+  let payload;
+  try { payload = JSON.parse(text.trim()); } catch { alert("That doesn't look like a valid backup code."); return; }
+  if (!payload || typeof payload !== "object" || typeof payload.log !== "object") {
+    alert("That doesn't look like a valid backup code."); return;
+  }
+  saveLog({ ...loadLog(), ...payload.log });   // on a same-day conflict, the pasted-in day wins
+  saveDislikes(Array.from(new Set(loadDislikes().concat(payload.dislikes || []))));
+  document.getElementById("backup-msg").textContent = "✓ Restored — your logged days are here now.";
+  buildCalendar();
+}
+
 // ---------- tabs ----------
 function showTab(name) {
   ["today", "calendar"].forEach(t => {
@@ -360,6 +381,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("mode-dress").addEventListener("click", () => setMode("dress"));
   document.getElementById("tab-today").addEventListener("click", () => showTab("today"));
   document.getElementById("tab-calendar").addEventListener("click", () => showTab("calendar"));
+  document.getElementById("backup-export").addEventListener("click", exportBackup);
+  document.getElementById("backup-import").addEventListener("click", importBackup);
   document.getElementById("cal-prev").addEventListener("click", () => { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } buildCalendar(); });
   document.getElementById("cal-next").addEventListener("click", () => { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } buildCalendar(); });
 

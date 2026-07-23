@@ -65,6 +65,8 @@ h1 span { color: var(--pink); }
 .palette-note { font-size: 12px; color: var(--muted); margin-top: 10px; font-style: italic; }
 
 .actions { display: flex; gap: 10px; margin-top: 18px; }
+.backup-row { display: flex; gap: 10px; }
+.backup-row .btn { flex: 1; }
 .btn { flex: 1; border: none; border-radius: 12px; padding: 14px; font-size: 15px; font-weight: 700; cursor: pointer; }
 .btn.primary { background: var(--pink); color: #fff; }
 .btn.secondary { background: #f0f0f2; color: var(--ink); }

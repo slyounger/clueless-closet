@@ -60,15 +60,15 @@ const WARDROBE = [
   // ---- SHOES ----  (sneaker: true = Sat/Sun only, unless athletic on a workout day)
   { id: "shoe-sneakers",     name: "Tennis shoes / sneakers",          cat: "shoe", tone: "neutral", rain: true,  sneaker: true, athletic: true },
   { id: "shoe-cow",          name: "Cow-print shoes",                  cat: "shoe", tone: "neutral", rain: true },
-  { id: "shoe-birks-black",  name: "Black Birkenstocks",               cat: "shoe", tone: "neutral", rain: true },
+  { id: "shoe-birks-black",  name: "Black Birkenstocks",               cat: "shoe", tone: "neutral", rain: true, black: true },
   { id: "shoe-white-sandals",name: "White sandals",                    cat: "shoe", tone: "neutral", rain: false, summer: true },
-  { id: "shoe-black-sandals",name: "Black sandals",                    cat: "shoe", tone: "neutral", rain: false, summer: true },
+  { id: "shoe-black-sandals",name: "Black sandals",                    cat: "shoe", tone: "neutral", rain: false, summer: true, black: true },
 
   // ---- OUTERWEAR (rain only) ----
   { id: "outer-rain",     name: "Lightweight rain jacket",             cat: "outer", tone: "neutral", rain: true },
 
   // ---- HATS (optional accent) ----
-  { id: "hat-black-grimpeurs", name: "Black Grimpeurs cap",            cat: "hat", tone: "dark",   rain: true },
+  { id: "hat-black-grimpeurs", name: "Black Grimpeurs cap",            cat: "hat", tone: "dark",   rain: true, black: true },
   { id: "hat-blue-timber",     name: "Light blue Timber & Trout cap",  cat: "hat", tone: "light",  rain: true },
   { id: "hat-red",             name: "Red cap",                        cat: "hat", tone: "bright", rain: true },
   { id: "hat-maroon",          name: "Maroon cap",                     cat: "hat", tone: "bright", rain: true },
