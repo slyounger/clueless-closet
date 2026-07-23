@@ -70,6 +70,15 @@ function weatherDesc(c) {
 
 // ---------- helpers ----------
 const items = (cat) => WARDROBE.filter(i => i.cat === cat);
+// Layers = true layers PLUS tops flagged canLayer (e.g. rugby worn open over a tank).
+// A canLayer top is returned as a layer-role copy so it labels/sorts as a Layer; its id is unchanged for logging.
+const layerPool = () => items("layer").concat(
+  WARDROBE.filter(i => i.cat === "top" && i.canLayer).map(i => ({ ...i, cat: "layer" })));
+// Shannon doesn't wear navy and black together — flag any outfit that pairs a navy core piece with a black one.
+function hasNavyBlackClash(pieces) {
+  const core = pieces.filter(p => ["top", "bottom", "layer", "dress"].includes(p.cat));
+  return core.some(p => p.navy) && core.some(p => p.black);
+}
 const workoutTops = () => WARDROBE.filter(i => i.cat === "workout" && i.sub === "top");
 const workoutBottoms = () => WARDROBE.filter(i => i.cat === "workout" && i.sub === "bottom");
 const byId = (id) => WARDROBE.find(i => i.id === id);
@@ -130,7 +139,8 @@ function buildCandidate(weather, o, log, dislikes) {
       pieces.push(pick(items("bottom").filter(b => !raining || b.rain)));
     }
     if (wantsLayer(weather, o)) {
-      const L = items("layer").filter(l => !raining || l.rain);
+      const topId = (pieces.find(p => p.cat === "top") || {}).id;
+      const L = layerPool().filter(l => (!raining || l.rain) && l.id !== topId);
       if (L.length) pieces.push(pick(L));
     }
   }
@@ -145,7 +155,8 @@ function buildCandidate(weather, o, log, dislikes) {
   const freshness = pieces.reduce((a, p) => a + Math.min(daysSinceWorn(p.id, log), 30), 0) / pieces.length;
   const repeat = comboUses(pieces, log) * 8;
   const disliked = dislikes.includes(coreKey(pieces)) ? 1000 : 0;
-  const score = paletteScore(pieces) * 3 + freshness * 0.4 - repeat - disliked;
+  const clash = hasNavyBlackClash(pieces) ? 1000 : 0;
+  const score = paletteScore(pieces) * 3 + freshness * 0.4 - repeat - disliked - clash;
   return { pieces, score };
 }
 function generateOutfit(weather, o) {
@@ -161,10 +172,12 @@ function swapPiece(outfit, cat, weather, o) {
   let pool;
   if (cat === "shoe") pool = allowedShoes(weather, o, o.dateStr);
   else if (cat === "bottom") pool = items("bottom").filter(b => !(weather.rainingNow || weather.rainChance >= 50) || b.rain);
+  else if (cat === "layer") pool = layerPool();
   else if (cat === "workout") pool = outfit.pieces.find(p => p.cat === "workout" && p.sub === "top") ? workoutTops() : workoutBottoms();
   else pool = items(cat);
   const cur = outfit.pieces.find(p => p.cat === cat);
   pool = pool.filter(p => p.id !== (cur || {}).id && (cat !== "workout" || p.sub === cur.sub));
+  pool = pool.filter(p => !outfit.pieces.some(x => x !== cur && x.id === p.id));   // no dup (e.g. rugby as both top + layer)
   if (!pool.length) return outfit;
   pool.sort((a, b) => daysSinceWorn(b.id, log) - daysSinceWorn(a.id, log));
   const choice = pool[Math.floor(Math.random() * Math.min(4, pool.length))];

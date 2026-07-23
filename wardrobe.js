@@ -9,19 +9,19 @@ const WARDROBE = [
   { id: "tank-white-henley",   name: "White ribbed Henley tank",        cat: "top", sub: "tank", tone: "light",  warmth: 1, rain: true, summer: true },
   { id: "tank-white-scoop",    name: "White scoop-neck tank",           cat: "top", sub: "tank", tone: "light",  warmth: 1, rain: true, summer: true },
   { id: "tank-white-highneck", name: "White high-neck ribbed tank",     cat: "top", sub: "tank", tone: "light",  warmth: 1, rain: true, summer: true },
-  { id: "tank-navy-cami",      name: "Navy pointelle cami",             cat: "top", sub: "tank", tone: "dark",   warmth: 1, rain: true, summer: true },
+  { id: "tank-navy-cami",      name: "Navy pointelle cami",             cat: "top", sub: "tank", tone: "dark",   warmth: 1, rain: true, summer: true, navy: true },
   { id: "tank-royal-mock",     name: "Royal blue mock turtleneck tank", cat: "top", sub: "tank", tone: "bright", warmth: 1, rain: true, summer: true },
 
   // ---- TOPS: t-shirts (all summer) ----
   { id: "tee-white-fitted",    name: "White fitted tee",                cat: "top", sub: "tee", tone: "light",   warmth: 2, rain: true, summer: true },
   { id: "tee-white-varsity",   name: "White graphic tee (Varsity meat shop)", cat: "top", sub: "tee", tone: "light", warmth: 2, rain: true, summer: true },
-  { id: "tee-black-zeus",      name: "Black graphic tee (Zeus)",        cat: "top", sub: "tee", tone: "dark",    warmth: 2, rain: true, summer: true },
+  { id: "tee-black-zeus",      name: "Black graphic tee (Zeus)",        cat: "top", sub: "tee", tone: "dark",    warmth: 2, rain: true, summer: true, black: true },
   { id: "tee-hot-pink",        name: "Hot pink tee",                    cat: "top", sub: "tee", tone: "bright",  warmth: 2, rain: true, summer: true },
   { id: "tee-gray-roadtripper",name: "Gray knit roadtripper tee",       cat: "top", sub: "tee", tone: "neutral", warmth: 2, rain: true, summer: true },
 
   // ---- TOPS: long sleeves (year-round / transitional) ----
   { id: "ls-green-poplin",     name: "Green & white J.Crew mandarin poplin shirt", cat: "top", sub: "longsleeve", tone: "bright", warmth: 3, rain: true, overshirt: true },
-  { id: "ls-rugby",            name: "Blue & white rugby shirt",        cat: "top", sub: "longsleeve", tone: "bright", warmth: 3, rain: true },
+  { id: "ls-rugby",            name: "Blue & white rugby shirt",        cat: "top", sub: "longsleeve", tone: "bright", warmth: 3, rain: true, canLayer: true },
 
   // ---- LAYERS ----
   { id: "layer-pink-sweatshirt", name: "Hot pink sweatshirt",          cat: "layer", sub: "sweatshirt", tone: "bright", warmth: 4, rain: true, summer: true },
@@ -38,8 +38,9 @@ const WARDROBE = [
   // ---- BOTTOMS ----
   { id: "bot-denim-shorts",    name: "Denim shorts",                   cat: "bottom", sub: "shorts", tone: "neutral", warmth: 1, rain: true, summer: true },
   { id: "bot-blue-shorts",     name: "Blue elastic-waist shorts",      cat: "bottom", sub: "shorts", tone: "neutral", warmth: 1, rain: true, summer: true },
-  { id: "bot-black-linen",     name: "Black linen shorts",             cat: "bottom", sub: "shorts", tone: "dark",    warmth: 1, rain: true, summer: true },
-  { id: "bot-black-skort",     name: "Athletic black skort",           cat: "bottom", sub: "skort",  tone: "dark",    warmth: 1, rain: true, summer: true },
+  { id: "bot-black-linen",     name: "Black linen shorts",             cat: "bottom", sub: "shorts", tone: "dark",    warmth: 1, rain: true, summer: true, black: true },
+  { id: "bot-black-skort",     name: "Athletic black skort",           cat: "bottom", sub: "skort",  tone: "dark",    warmth: 1, rain: true, summer: true, black: true },
+  { id: "bot-black-leggings",  name: "Athletic black leggings",        cat: "bottom", sub: "leggings", tone: "dark",  warmth: 2, rain: true, black: true },
   { id: "bot-blue-jeans",      name: "Blue jeans",                     cat: "bottom", sub: "pants",  tone: "neutral", warmth: 3, rain: true },
   { id: "bot-white-jeans",     name: "White denim jeans",              cat: "bottom", sub: "pants",  tone: "light",   warmth: 3, rain: true },
   { id: "bot-pistola",         name: "Blue Pistola wide-leg pants",    cat: "bottom", sub: "pants",  tone: "neutral", warmth: 3, rain: true },
