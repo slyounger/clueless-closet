@@ -58,6 +58,15 @@
       </div>
       <div id="editor" class="card editor"></div>
 
+      <div class="card sync">
+        <div class="sync-row">
+          <input id="sync-code" type="text" placeholder="your private sync phrase" autocomplete="off" autocapitalize="none" spellcheck="false">
+          <button id="sync-on" class="btn primary">Turn on sync</button>
+        </div>
+        <p class="hint">Pick any secret phrase and enter the same one on your phone and laptop — your outfits then sync automatically.</p>
+        <div id="sync-msg" class="worn-msg"></div>
+      </div>
+
       <div class="card backup">
         <div class="backup-row">
           <button id="backup-export" class="btn secondary">Copy backup</button>

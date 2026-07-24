@@ -6,6 +6,9 @@ const FAYETTEVILLE = { lat: 36.0626, lon: -94.1574, tz: "America/Chicago", name:
 const CAMDEN = { lat: 44.2098, lon: -69.0648, tz: "America/New_York", name: "Camden, ME", ac: false };
 const LOG_KEY = "clueless_closet_log_v1";
 const DISLIKE_KEY = "clueless_closet_dislikes_v1";
+const SYNC_CODE_KEY = "clueless_closet_sync_code_v1";
+// Firebase Realtime Database REST base (e.g. https://xxxx-default-rtdb.firebaseio.com). Empty = sync off.
+const SYNC_DB_URL = "";
 // Temporary: through this date, workout clothes + sneakers are fine any day of the week.
 const SNEAKER_FREE_UNTIL = "2026-07-26";
 // Still in Maine through this date — pull weather from Camden until then, Fayetteville after.
@@ -225,7 +228,7 @@ function wearIt() {
   if (!currentOutfit) return;
   const log = loadLog();
   log[todayStr()] = [{ items: currentOutfit.pieces.map(p => p.id), note: "", source: "auto" }];
-  saveLog(log);
+  saveLog(log); pushSync();
   document.getElementById("worn-msg").textContent = "✓ Logged for today.";
   buildCalendar();
 }
@@ -235,7 +238,7 @@ function giveFeedback() {
   if (note === null) return;
   const d = loadDislikes();
   d.push(coreKey(currentOutfit.pieces));
-  saveDislikes(d);
+  saveDislikes(d); pushSync();
   document.getElementById("worn-msg").textContent = "Got it — won't suggest that combo again.";
   newOutfit();
 }
@@ -311,7 +314,7 @@ function renderEditor(ds, look, usesDress, extraLooks) {
   document.getElementById("ed-save").addEventListener("click", () => saveEditor(ds, extraLooks));
   const del = document.getElementById("ed-delete");
   if (del) del.addEventListener("click", () => {
-    const l = loadLog(); delete l[ds]; saveLog(l);
+    const l = loadLog(); delete l[ds]; saveLog(l); pushSync();
     el.classList.remove("open"); selectedDate = null; buildCalendar();
   });
 }
@@ -331,10 +334,46 @@ function saveEditor(ds, extraLooks) {
   const entries = [{ items: c.items, note: c.note, source: "manual" }];
   (extraLooks || []).forEach(l => entries.push(l));   // preserve a second look if the day had one
   log[ds] = entries;
-  saveLog(log);
+  saveLog(log); pushSync();
   document.getElementById("editor").classList.remove("open");
   selectedDate = null;
   buildCalendar();
+}
+
+// ---------- cloud sync (Firebase RTDB REST — no SDK, no login) ----------
+// A shared secret code namespaces the data. Same code on two devices = same closet.
+function getSyncCode() { return localStorage.getItem(SYNC_CODE_KEY) || ""; }
+function syncEnabled() { return !!SYNC_DB_URL && !!getSyncCode(); }
+function syncUrl() {
+  return SYNC_DB_URL.replace(/\/$/, "") + "/closets/" + encodeURIComponent(getSyncCode()) + ".json";
+}
+// Union of dates; the local device wins a same-day conflict (whoever edited last on that device).
+function mergeLogs(remote, local) { return { ...(remote || {}), ...(local || {}) }; }
+async function syncNow() {
+  if (!syncEnabled()) return false;
+  const url = syncUrl();
+  let remote = {};
+  try { remote = (await (await fetch(url)).json()) || {}; } catch { return false; }
+  const mergedLog = mergeLogs(remote.log, loadLog());
+  const mergedDis = Array.from(new Set((remote.dislikes || []).concat(loadDislikes())));
+  saveLog(mergedLog); saveDislikes(mergedDis);
+  try {
+    await fetch(url, { method: "PUT", body: JSON.stringify({ log: mergedLog, dislikes: mergedDis }) });
+  } catch { /* offline: local is saved, will push next time */ }
+  return true;
+}
+function pushSync() { if (syncEnabled()) syncNow(); }   // fire-and-forget after a local change
+function turnOnSync() {
+  const code = (document.getElementById("sync-code").value || "").trim();
+  const msg = document.getElementById("sync-msg");
+  if (!SYNC_DB_URL) { msg.textContent = "Sync isn't switched on in this build yet."; return; }
+  if (!code) { msg.textContent = "Enter a secret phrase first."; return; }
+  localStorage.setItem(SYNC_CODE_KEY, code);
+  msg.textContent = "Syncing…";
+  syncNow().then(ok => {
+    msg.textContent = ok ? "✓ Sync on. Use this same phrase on your other device." : "Couldn't reach sync — check your connection.";
+    buildCalendar();
+  });
 }
 
 // ---------- backup (export / import between devices) ----------
@@ -355,6 +394,7 @@ function importBackup() {
   }
   saveLog({ ...loadLog(), ...payload.log });   // on a same-day conflict, the pasted-in day wins
   saveDislikes(Array.from(new Set(loadDislikes().concat(payload.dislikes || []))));
+  pushSync();
   document.getElementById("backup-msg").textContent = "✓ Restored — your logged days are here now.";
   buildCalendar();
 }
@@ -381,8 +421,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("mode-dress").addEventListener("click", () => setMode("dress"));
   document.getElementById("tab-today").addEventListener("click", () => showTab("today"));
   document.getElementById("tab-calendar").addEventListener("click", () => showTab("calendar"));
+  document.getElementById("sync-on").addEventListener("click", turnOnSync);
+  document.getElementById("sync-code").value = getSyncCode();
   document.getElementById("backup-export").addEventListener("click", exportBackup);
   document.getElementById("backup-import").addEventListener("click", importBackup);
+  if (syncEnabled()) syncNow();
   document.getElementById("cal-prev").addEventListener("click", () => { calMonth--; if (calMonth < 0) { calMonth = 11; calYear--; } buildCalendar(); });
   document.getElementById("cal-next").addEventListener("click", () => { calMonth++; if (calMonth > 11) { calMonth = 0; calYear++; } buildCalendar(); });
 
