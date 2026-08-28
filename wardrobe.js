@@ -48,7 +48,7 @@ const WARDROBE = [
   { id: "bot-blue-shorts",     name: "Blue elastic-waist shorts",      cat: "bottom", sub: "shorts", tone: "blue", warmth: 1, rain: true, capsules: ["maine"] },
   { id: "bot-black-linen",     name: "Black linen shorts",             cat: "bottom", sub: "shorts", tone: "dark",    warmth: 1, rain: true, black: true, capsules: ["maine"] },
   { id: "bot-black-skort",     name: "Athletic black skort",           cat: "bottom", sub: "skort",  tone: "dark",    warmth: 1, rain: true, black: true, capsules: ["maine"] },
-  { id: "bot-black-leggings",  name: "Athletic black leggings",        cat: "bottom", sub: "leggings", tone: "dark",  warmth: 2, rain: true, black: true, capsules: ["maine"] },
+  { id: "bot-black-leggings",  name: "Athletic black leggings",        cat: "bottom", sub: "leggings", tone: "dark",  warmth: 2, rain: true, black: true, capsules: ["gym"] },
   { id: "bot-blue-jeans",      name: "Blue jeans",                     cat: "bottom", sub: "pants",  tone: "blue", warmth: 3, rain: true, capsules: ["maine"] },
   { id: "bot-pistola",         name: "Blue Pistola wide-leg pants",    cat: "bottom", sub: "pants",  tone: "blue", warmth: 3, rain: true, capsules: ["maine"] },
   { id: "bot-green-track",     name: "Green track pants",              cat: "bottom", sub: "pants",  tone: "bright",  warmth: 3, rain: true, capsules: ["maine"] },

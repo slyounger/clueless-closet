@@ -109,8 +109,11 @@ const layerPool = () => capsulePool("layer").concat(
 function hasNavyBlackClash(pieces) {
   return pieces.some(p => p.navy) && pieces.some(p => p.black);
 }
-const workoutTops = () => CLOSET().filter(i => i.cat === "workout" && i.sub === "top");
-const workoutBottoms = () => CLOSET().filter(i => i.cat === "workout" && i.sub === "bottom");
+// Gym kit is whatever sits in the gym capsule, whether it is tagged cat "workout" (the tanks)
+// or an ordinary garment worn only to train in (the black leggings).
+const inGym = (i) => (i.capsules || []).includes("gym");
+const workoutTops = () => CLOSET().filter(i => inGym(i) && (i.sub === "top" || i.cat === "top"));
+const workoutBottoms = () => CLOSET().filter(i => inGym(i) && (i.sub === "bottom" || i.sub === "leggings" || i.cat === "bottom"));
 const byId = (id) => CLOSET().find(i => i.id === id);
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
 
@@ -305,7 +308,10 @@ async function newOutfit() {
 function wearIt() {
   if (!currentOutfit) return;
   const log = loadLog();
-  log[todayStr()] = [{ items: currentOutfit.pieces.map(p => p.id), note: "", source: "auto" }];
+  const ds = todayStr();
+  // Replace the day's main look only — anything she changed into, or wore to the gym, stays.
+  const keep = dayLooks(log, ds).filter(l => l.kind === "changed" || l.kind === "gym");
+  log[ds] = [{ items: currentOutfit.pieces.map(p => p.id), note: "", source: "auto", kind: "day" }].concat(keep);
   saveLog(log); pushSync();
   document.getElementById("worn-msg").textContent = "✓ Logged for today.";
   buildCalendar();
@@ -323,6 +329,7 @@ function giveFeedback() {
 
 // ---------- calendar ----------
 function buildCalendar() {
+  renderBackupNudge();
   const log = loadLog();
   const first = new Date(calYear, calMonth, 1);
   const startDow = first.getDay();
@@ -559,9 +566,32 @@ function turnOnSync() {
 }
 
 // ---------- backup (export / import between devices) ----------
+// The log lives only on this device, so a periodic export is the only copy of it. The nudge
+// below counts from the last export — importing someone else's backup does not reset it.
+const BACKUP_KEY = "clueless_closet_last_backup_v1";
+const BACKUP_DAYS = 30;
+function lastBackup() { return localStorage.getItem(BACKUP_KEY); }
+function daysSinceBackup() {
+  const d = lastBackup();
+  if (!d) return null;
+  return Math.max(0, Math.round((new Date() - new Date(d + "T00:00:00")) / 86400000));
+}
+function renderBackupNudge() {
+  const el = document.getElementById("backup-nudge");
+  if (!el) return;
+  const n = daysSinceBackup();
+  if (n === null || n < BACKUP_DAYS) { el.textContent = ""; el.classList.add("hidden"); return; }
+  el.textContent = `Last backup was ${n} days ago. Tap Copy backup — it is the only copy of your log.`;
+  el.classList.remove("hidden");
+}
+
 function exportBackup() {
   const text = JSON.stringify({ v: 1, log: loadLog(), dislikes: loadDislikes() });
-  const done = () => { document.getElementById("backup-msg").textContent = "✓ Backup copied — paste it on your other device."; };
+  const done = () => {
+    localStorage.setItem(BACKUP_KEY, todayStr());
+    renderBackupNudge();
+    document.getElementById("backup-msg").textContent = "✓ Backup copied — paste it somewhere safe.";
+  };
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(text).then(done).catch(() => { prompt("Copy this backup code:", text); done(); });
   } else { prompt("Copy this backup code:", text); done(); }
@@ -594,6 +624,7 @@ function showTab(name) {
 document.addEventListener("DOMContentLoaded", async () => {
   const now = new Date(); calYear = now.getFullYear(); calMonth = now.getMonth();
 
+  if (!lastBackup()) localStorage.setItem(BACKUP_KEY, todayStr());
   initCapsulePicker();
   document.getElementById("reroll").addEventListener("click", newOutfit);
   document.getElementById("wear").addEventListener("click", wearIt);
