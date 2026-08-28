@@ -64,7 +64,7 @@ const WARDROBE = [
 
   // ---- SHOES ----  (sneaker: true = Sat/Sun only, unless athletic on a workout day)
   { id: "shoe-sneakers",     name: "Tennis shoes / sneakers",          cat: "shoe", tone: "neutral", rain: true,  sneaker: true, athletic: true, capsules: ["maine"] },
-  { id: "shoe-cow",          name: "Cow-print shoes",                  cat: "shoe", tone: ["light", "dark"], rain: true, capsules: ["maine"] },
+  { id: "shoe-cow",          name: "Cow-print shoes",                  cat: "shoe", tone: ["light", "dark"], rain: true, capsules: ["maine", "teaching2026"] },
   { id: "shoe-birks-black",  name: "Black Birkenstocks",               cat: "shoe", tone: "dark", rain: true, black: true, capsules: ["maine"] },
   { id: "shoe-white-sandals",name: "White sandals",                    cat: "shoe", tone: "light", rain: false, capsules: ["maine"] },
   { id: "shoe-black-sandals",name: "Black sandals",                    cat: "shoe", tone: "dark", rain: false, black: true, capsules: ["maine"] },
@@ -89,6 +89,11 @@ const WARDROBE = [
   { id: "shoe-witch-flats",     name: "Black witch flats",                cat: "shoe", tone: "dark",    rain: false, black: true, capsules: ["teaching2026"] },
   { id: "shoe-moccasin-loafers",name: "Black Maine moccasin loafers",     cat: "shoe", tone: "dark",    rain: true,  black: true, capsules: ["teaching2026"] },
   { id: "shoe-leopard-flats",   name: "Leopard flats",                    cat: "shoe", tone: "neutral", rain: false, capsules: ["teaching2026"] },
+  { id: "top-cream-nubby",      name: "Cream nubby tank",                 cat: "top", sub: "tank",     tone: "light", warmth: 1, rain: true, capsules: ["teaching2026"] },
+  { id: "top-black-mesh-polo",  name: "Black mesh polo",                  cat: "top", sub: "polo",     tone: "dark",  warmth: 2, rain: true, black: true, capsules: ["teaching2026"] },
+  { id: "bot-black-pleated",    name: "Black Ali Golden pleated pants",   cat: "bottom", sub: "pants", tone: "dark",  warmth: 3, rain: true, black: true, capsules: ["teaching2026"] },
+  { id: "shoe-black-brogues",   name: "Black brogues",                    cat: "shoe", tone: "dark",   rain: true, black: true, capsules: ["teaching2026"] },
+  { id: "scarf-berry",          name: "Berry scarf",                      cat: "scarf", tone: "bright", warmth: 1, rain: true, capsules: ["teaching2026"] },
 ];
 
 if (typeof module !== "undefined") module.exports = { WARDROBE };
