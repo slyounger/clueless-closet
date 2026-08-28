@@ -168,6 +168,18 @@ function tonesOf(list) {
   if (hasBlue) t.add(t.has("dark") ? "bright" : "dark");
   return t;
 }
+// How an outfit is judged depends on which wardrobe it comes from.
+//   maine is broad and colourful, so spreading across dark, light and bright is the goal.
+//   teaching2026 is deliberately narrow — mostly black, with white, denim and blue. Only about
+//   a third of its outfits reach all three tones, so scoring it on tone spread would push hard
+//   against the look Shannon actually wants. There, wearing something she hasn't worn lately
+//   carries the ranking instead, judged on the least-fresh piece so one repeat is not averaged away.
+const SCORING = {
+  teaching2026: { palette: 0, freshness: 0.4, recency: 1.0, window: 14 },
+  default:      { palette: 3, freshness: 0.4, recency: 0.0, window: 14 },
+};
+const scoringFor = (capsule) => SCORING[capsule] || SCORING.default;
+
 function paletteScore(list) {
   const t = tonesOf(list);
   let s = 0;
@@ -209,11 +221,19 @@ function buildCandidate(weather, o, log, dislikes) {
   if (!o.workout && Math.random() < 0.18) pieces.push(pick(capsulePool("accessory")));
 
   pieces = pieces.filter(Boolean);
-  const freshness = pieces.reduce((a, p) => a + Math.min(daysSinceWorn(p.id, log), 30), 0) / pieces.length;
+  const rule = scoringFor(activeCapsule());
+  const days = pieces.map(p => Math.min(daysSinceWorn(p.id, log), 30));
+  const freshness = days.reduce((a, b) => a + b, 0) / days.length;
+  // Recency bites only inside a short window and then stops, so a piece worn yesterday is
+  // clearly worse than one worn last week, while everything past the window ranks alike.
+  // Scoring on the least-fresh piece instead saturates: every unworn piece ties, the top
+  // candidates all draw from the same handful, and variety collapses.
+  const recency = pieces.reduce((a, p) => a + Math.max(0, rule.window - daysSinceWorn(p.id, log)), 0);
   const repeat = comboUses(pieces, log) * 8;
   const disliked = dislikes.includes(coreKey(pieces)) ? 1000 : 0;
   const clash = hasNavyBlackClash(pieces) ? 1000 : 0;
-  const score = paletteScore(pieces) * 3 + freshness * 0.4 - repeat - disliked - clash;
+  const score = paletteScore(pieces) * rule.palette + freshness * rule.freshness
+              - recency * rule.recency - repeat - disliked - clash;
   return { pieces, score };
 }
 function generateOutfit(weather, o) {
