@@ -105,7 +105,7 @@ const capsulePool = (cat) => items(cat).filter(i => (i.capsules || []).includes(
 // A canLayer top is returned as a layer-role copy so it labels/sorts as a Layer; its id is unchanged for logging.
 const layerPool = () => capsulePool("layer").concat(
   capsulePool("top").filter(i => i.canLayer).map(i => ({ ...i, cat: "layer" })));
-// Shannon doesn't wear navy and black together, anywhere — flag any outfit that has both (incl. shoes/hats).
+// Shannon doesn't wear navy and black together, anywhere — flag any outfit that has both (incl. shoes and accessories).
 function hasNavyBlackClash(pieces) {
   return pieces.some(p => p.navy) && pieces.some(p => p.black);
 }
@@ -205,7 +205,8 @@ function buildCandidate(weather, o, log, dislikes) {
   let shoes = allowedShoes(weather, o, o.dateStr);
   if (o.workout) { const ath = shoes.filter(s => s.athletic || s.sneaker || s.id === "shoe-cow"); if (ath.length) shoes = ath; }
   if (shoes.length) pieces.push(pick(shoes));
-  if (!o.workout && Math.random() < 0.18) pieces.push(pick(capsulePool("hat")));  // hat is an occasional accent, not daily
+  // An accessory is an occasional accent — plenty of outfits do without one.
+  if (!o.workout && Math.random() < 0.18) pieces.push(pick(capsulePool("accessory")));
 
   pieces = pieces.filter(Boolean);
   const freshness = pieces.reduce((a, p) => a + Math.min(daysSinceWorn(p.id, log), 30), 0) / pieces.length;
@@ -248,8 +249,8 @@ function swapPiece(outfit, cat, weather, o) {
 let currentOutfit = null, currentWeather = null, mode = "any";
 let calYear, calMonth, selectedDate = null;
 
-const CAT_ORDER = { top: 0, dress: 0, workout: 0, bottom: 1, layer: 2, shoe: 3, outer: 4, hat: 5 };
-const CAT_LABEL = { top: "Top", dress: "Dress", workout: "Workout", bottom: "Bottom", layer: "Layer", shoe: "Shoes", outer: "Jacket", hat: "Hat" };
+const CAT_ORDER = { top: 0, dress: 0, workout: 0, bottom: 1, layer: 2, shoe: 3, outer: 4, accessory: 5 };
+const CAT_LABEL = { top: "Top", dress: "Dress", workout: "Workout", bottom: "Bottom", layer: "Layer", shoe: "Shoes", outer: "Jacket", accessory: "Accessory" };
 
 function opts() { return { mode, workout: document.getElementById("workout").checked, dateStr: todayStr() }; }
 function tonesLabel(pieces) {
@@ -337,7 +338,7 @@ function selectHtml(cat, chosen, includeBlank, look) {
 }
 // Resolve a typed list into garments. Anything unrecognised is offered as a new piece so the
 // wardrobe fills in as things get worn, instead of needing an inventory session up front.
-const CATS = ["top", "bottom", "layer", "dress", "shoe", "scarf", "hat", "outer"];
+const CATS = ["top", "bottom", "layer", "dress", "shoe", "accessory", "outer"];
 const TONES = ["dark", "light", "bright", "neutral", "blue"];
 function resolveWriteIn(ds) {
   const raw = (document.getElementById("ed-writein").value || "").split(",").map(t => t.trim()).filter(Boolean);
@@ -419,8 +420,7 @@ function renderEditor(ds, look, usesDress, changed, gym) {
     ${dress ? "" : `<div class="ed-row"><label>Bottom</label>${selectHtml("bottom", pick(lk, "bottom"), false)}</div>`}
     <div class="ed-row"><label>Layer</label>${selectHtml("layer", pick(lk, "layer"), true)}</div>
     <div class="ed-row"><label>Shoes</label>${selectHtml("shoe", pick(lk, "shoe"), true)}</div>
-    <div class="ed-row"><label>Scarf</label>${selectHtml("scarf", pick(lk, "scarf"), true)}</div>
-    <div class="ed-row"><label>Hat</label>${selectHtml("hat", pick(lk, "hat"), true)}</div>`;
+    <div class="ed-row"><label>Accessory</label>${selectHtml("accessory", pick(lk, "accessory"), true)}</div>`;
 
   el.innerHTML = `
     <h3>${dateLbl}</h3>
