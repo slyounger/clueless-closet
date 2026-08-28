@@ -83,7 +83,7 @@ const WARDROBE = [
   { id: "top-vintage-sweater",  name: "Black, tan & white vintage short-sleeve sweater", cat: "top", sub: "sweater", tone: ["light", "dark"], warmth: 3, rain: true, black: true, capsules: ["teaching2026"] },
   { id: "bot-black-wideleg",    name: "Black wide-leg pants",             cat: "bottom", sub: "pants", tone: "dark",  warmth: 3, rain: true, black: true, capsules: ["teaching2026"] },
   { id: "layer-blue-blazer",    name: "Blue blazer",                      cat: "layer", sub: "blazer", tone: "blue",  warmth: 3, rain: true, capsules: ["teaching2026"] },
-  { id: "layer-denim-vest",     name: "Madewell denim vest",              cat: "layer", sub: "vest",   tone: "neutral", warmth: 2, rain: true, capsules: ["teaching2026"] },
+  { id: "top-denim-vest",       name: "Madewell denim vest",              cat: "top", sub: "vest",     tone: "neutral", warmth: 2, rain: true, capsules: ["teaching2026"] },
   { id: "dress-choir",          name: "White & black choir dress",        cat: "dress", tone: ["light", "dark"], warmth: 2, rain: true, black: true, capsules: ["teaching2026"] },
   { id: "shoe-black-heels",     name: "Black heels",                      cat: "shoe", tone: "dark",    rain: false, black: true, capsules: ["teaching2026"] },
   { id: "shoe-witch-flats",     name: "Black witch flats",                cat: "shoe", tone: "dark",    rain: false, black: true, capsules: ["teaching2026"] },
