@@ -72,7 +72,9 @@ function weatherDesc(c) {
 }
 
 // ---------- helpers ----------
-const items = (cat) => WARDROBE.filter(i => i.cat === cat);
+// offer: false pieces are owned but never offered as part of a look — they are chosen
+// for function, not as an all-day outfit (rain jacket, swimsuits).
+const items = (cat) => WARDROBE.filter(i => i.cat === cat && i.offer !== false);
 // Layers = true layers PLUS tops flagged canLayer (e.g. rugby worn open over a tank).
 // A canLayer top is returned as a layer-role copy so it labels/sorts as a Layer; its id is unchanged for logging.
 const layerPool = () => items("layer").concat(
@@ -154,7 +156,6 @@ function buildCandidate(weather, o, log, dislikes) {
   let shoes = allowedShoes(weather, o, o.dateStr);
   if (o.workout) { const ath = shoes.filter(s => s.athletic || s.sneaker || s.id === "shoe-cow"); if (ath.length) shoes = ath; }
   if (shoes.length) pieces.push(pick(shoes));
-  if (raining) pieces.push(byId("outer-rain"));
   if (!o.workout && Math.random() < 0.18) pieces.push(pick(items("hat")));  // hat is an occasional accent, not daily
 
   pieces = pieces.filter(Boolean);
