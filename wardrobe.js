@@ -8,7 +8,9 @@
 //   pants work in Maine and for teaching. Swapping wardrobes = changing which capsule is
 //   active, not re-tagging every item. "maine" is the summer-2026 trip set.
 // tone "blue" resolves against the rest of the look: bright when something else is dark,
-//   otherwise dark. A tone may also be a pair, e.g. the poplin reads light AND bright.
+//   otherwise dark. Denim counts as blue: with black in the look it plays the bright, and
+//   with nothing else dark it is the dark. A tone may also be a pair — the poplin reads
+//   light AND bright.
 
 const WARDROBE = [
   // ---- TOPS: tanks (all summer) ----
@@ -42,12 +44,12 @@ const WARDROBE = [
   { id: "dress-blue-tshirt",   name: "Blue t-shirt dress",             cat: "dress", tone: "blue",  warmth: 2, rain: true, capsules: ["maine"] },
 
   // ---- BOTTOMS ----
-  { id: "bot-denim-shorts",    name: "Denim shorts",                   cat: "bottom", sub: "shorts", tone: "neutral", warmth: 1, rain: true, capsules: ["maine"] },
+  { id: "bot-denim-shorts",    name: "Denim shorts",                   cat: "bottom", sub: "shorts", tone: "blue", warmth: 1, rain: true, capsules: ["maine"] },
   { id: "bot-blue-shorts",     name: "Blue elastic-waist shorts",      cat: "bottom", sub: "shorts", tone: "blue", warmth: 1, rain: true, capsules: ["maine"] },
   { id: "bot-black-linen",     name: "Black linen shorts",             cat: "bottom", sub: "shorts", tone: "dark",    warmth: 1, rain: true, black: true, capsules: ["maine"] },
   { id: "bot-black-skort",     name: "Athletic black skort",           cat: "bottom", sub: "skort",  tone: "dark",    warmth: 1, rain: true, black: true, capsules: ["maine"] },
   { id: "bot-black-leggings",  name: "Athletic black leggings",        cat: "bottom", sub: "leggings", tone: "dark",  warmth: 2, rain: true, black: true, capsules: ["maine"] },
-  { id: "bot-blue-jeans",      name: "Blue jeans",                     cat: "bottom", sub: "pants",  tone: "neutral", warmth: 3, rain: true, capsules: ["maine"] },
+  { id: "bot-blue-jeans",      name: "Blue jeans",                     cat: "bottom", sub: "pants",  tone: "blue", warmth: 3, rain: true, capsules: ["maine"] },
   { id: "bot-pistola",         name: "Blue Pistola wide-leg pants",    cat: "bottom", sub: "pants",  tone: "blue", warmth: 3, rain: true, capsules: ["maine"] },
   { id: "bot-green-track",     name: "Green track pants",              cat: "bottom", sub: "pants",  tone: "bright",  warmth: 3, rain: true, capsules: ["maine"] },
 
@@ -83,7 +85,7 @@ const WARDROBE = [
   { id: "top-vintage-sweater",  name: "Black, tan & white vintage short-sleeve sweater", cat: "top", sub: "sweater", tone: ["light", "dark"], warmth: 3, rain: true, black: true, capsules: ["teaching2026"] },
   { id: "bot-black-wideleg",    name: "Black wide-leg pants",             cat: "bottom", sub: "pants", tone: "dark",  warmth: 3, rain: true, black: true, capsules: ["teaching2026"] },
   { id: "layer-blue-blazer",    name: "Blue blazer",                      cat: "layer", sub: "blazer", tone: "blue",  warmth: 3, rain: true, capsules: ["teaching2026"] },
-  { id: "top-denim-vest",       name: "Madewell denim vest",              cat: "top", sub: "vest",     tone: "neutral", warmth: 2, rain: true, capsules: ["teaching2026"] },
+  { id: "top-denim-vest",       name: "Madewell denim vest",              cat: "top", sub: "vest",     tone: "blue", warmth: 2, rain: true, capsules: ["teaching2026"] },
   { id: "dress-choir",          name: "White & black choir dress",        cat: "dress", tone: ["light", "dark"], warmth: 2, rain: true, black: true, capsules: ["teaching2026"] },
   { id: "shoe-black-heels",     name: "Black heels",                      cat: "shoe", tone: "dark",    rain: false, black: true, capsules: ["teaching2026"] },
   { id: "shoe-witch-flats",     name: "Black witch flats",                cat: "shoe", tone: "dark",    rain: false, black: true, capsules: ["teaching2026"] },
