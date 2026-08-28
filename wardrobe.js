@@ -47,7 +47,7 @@ const WARDROBE = [
   { id: "bot-black-linen",     name: "Black linen shorts",             cat: "bottom", sub: "shorts", tone: "dark",    warmth: 1, rain: true, black: true, capsules: ["maine"] },
   { id: "bot-black-skort",     name: "Athletic black skort",           cat: "bottom", sub: "skort",  tone: "dark",    warmth: 1, rain: true, black: true, capsules: ["maine"] },
   { id: "bot-black-leggings",  name: "Athletic black leggings",        cat: "bottom", sub: "leggings", tone: "dark",  warmth: 2, rain: true, black: true, capsules: ["maine"] },
-  { id: "bot-blue-jeans",      name: "Blue jeans",                     cat: "bottom", sub: "pants",  tone: "blue", warmth: 3, rain: true, capsules: ["maine"] },
+  { id: "bot-blue-jeans",      name: "Blue jeans",                     cat: "bottom", sub: "pants",  tone: "neutral", warmth: 3, rain: true, capsules: ["maine"] },
   { id: "bot-pistola",         name: "Blue Pistola wide-leg pants",    cat: "bottom", sub: "pants",  tone: "blue", warmth: 3, rain: true, capsules: ["maine"] },
   { id: "bot-green-track",     name: "Green track pants",              cat: "bottom", sub: "pants",  tone: "bright",  warmth: 3, rain: true, capsules: ["maine"] },
 
@@ -72,11 +72,11 @@ const WARDROBE = [
   // ---- OUTERWEAR (rain only) ----
   { id: "outer-rain",     name: "Lightweight rain jacket",             cat: "outer", tone: "neutral", rain: true, offer: false, capsules: ["maine"] },
 
-  // ---- HATS (optional accent) ----
-  { id: "hat-black-grimpeurs", name: "Black Grimpeurs cap",            cat: "hat", tone: "dark",   rain: true, black: true, capsules: ["maine"] },
-  { id: "hat-blue-timber",     name: "Light blue Timber & Trout cap",  cat: "hat", tone: "light",  rain: true, capsules: ["maine"] },
-  { id: "hat-red",             name: "Red cap",                        cat: "hat", tone: "bright", rain: true, capsules: ["maine"] },
-  { id: "hat-maroon",          name: "Maroon cap",                     cat: "hat", tone: "bright", rain: true, capsules: ["maine"] },
+  // ---- ACCESSORIES (optional accent — hats, scarves; not every outfit needs one) ----
+  { id: "hat-black-grimpeurs", name: "Black Grimpeurs cap",            cat: "accessory", tone: "dark",   rain: true, black: true, capsules: ["maine"] },
+  { id: "hat-blue-timber",     name: "Light blue Timber & Trout cap",  cat: "accessory", tone: "light",  rain: true, capsules: ["maine"] },
+  { id: "hat-red",             name: "Red cap",                        cat: "accessory", tone: "bright", rain: true, capsules: ["maine"] },
+  { id: "hat-maroon",          name: "Maroon cap",                     cat: "accessory", tone: "bright", rain: true, capsules: ["maine"] },
 
   // ---- TEACHING 2026 (fall) — captured from what Shannon actually taught in.
   //      warmth/rain are first guesses; correct them as you go.
@@ -93,7 +93,7 @@ const WARDROBE = [
   { id: "top-black-mesh-polo",  name: "Black mesh polo",                  cat: "top", sub: "polo",     tone: "dark",  warmth: 2, rain: true, black: true, capsules: ["teaching2026"] },
   { id: "bot-black-pleated",    name: "Black Ali Golden pleated pants",   cat: "bottom", sub: "pants", tone: "dark",  warmth: 3, rain: true, black: true, capsules: ["teaching2026"] },
   { id: "shoe-black-brogues",   name: "Black brogues",                    cat: "shoe", tone: "dark",   rain: true, black: true, capsules: ["teaching2026"] },
-  { id: "scarf-berry",          name: "Berry scarf",                      cat: "scarf", tone: "bright", warmth: 1, rain: true, capsules: ["teaching2026"] },
+  { id: "scarf-berry",          name: "Berry scarf",                      cat: "accessory", tone: "bright", warmth: 1, rain: true, capsules: ["teaching2026"] },
 ];
 
 if (typeof module !== "undefined") module.exports = { WARDROBE };
