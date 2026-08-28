@@ -310,7 +310,7 @@ function wearIt() {
   const log = loadLog();
   const ds = todayStr();
   // Replace the day's main look only — anything she changed into, or wore to the gym, stays.
-  const keep = dayLooks(log, ds).filter(l => l.kind === "changed" || l.kind === "gym");
+  const keep = dayLooks(log, ds).filter(l => l.kind === "changed");
   log[ds] = [{ items: currentOutfit.pieces.map(p => p.id), note: "", source: "auto", kind: "day" }].concat(keep);
   saveLog(log); pushSync();
   document.getElementById("worn-msg").textContent = "✓ Logged for today.";
@@ -406,7 +406,7 @@ function applyWriteIn(ds) {
   });
   if (!ids.length) return;
   const log = loadLog();
-  const rest = (log[ds] || []).filter(l => l.kind === "changed" || l.kind === "gym");
+  const rest = (log[ds] || []).filter(l => l.kind === "changed");
   log[ds] = [{ items: ids, note: "", source: "writein", kind: "day" }].concat(rest);
   saveLog(log); pushSync();
   document.getElementById("editor").classList.remove("open");
@@ -425,22 +425,16 @@ function readEditor() {
   return {
     items: grab("main"),
     changed: on("ed-changed") ? grab("changed") : [],
-    gym: on("ed-gym") ? grab("gym") : [],
     note: noteEl ? noteEl.value : "",
     usesDress: on("ed-dress"),
   };
 }
-function renderEditor(ds, look, usesDress, changed, gym) {
+function renderEditor(ds, look, usesDress, changed) {
   const el = document.getElementById("editor");
   const pick = (src, cat) => ((src && src.items) || []).find(id => (byId(id) || {}).cat === cat) || "";
-  const gymPick = (cat) => ((gym && gym.items) || []).find(id => {
-    const i = byId(id) || {};
-    return cat === "shoe" ? i.cat === "shoe" : (i.cat === "workout" && i.sub === cat);
-  }) || "";
   const val = (cat) => pick(look, cat);
   const dateLbl = new Date(ds + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
   const hasChanged = !!(changed && changed.items && changed.items.length);
-  const hasGym = !!(gym && gym.items && gym.items.length);
 
   const rows = (lk, dress) => `
     <div class="ed-row"><label>${dress ? "Dress" : "Top"}</label>${dress ? selectHtml("dress", pick(lk, "dress"), false) : selectHtml("top", pick(lk, "top"), false)}</div>
@@ -469,13 +463,6 @@ function renderEditor(ds, look, usesDress, changed, gym) {
       <div class="ed-row"><label>Shoes</label>${selectHtml("shoe", pick(changed, "shoe"), true, "changed")}</div>
     </div>
 
-    <div class="ed-toggle"><label><input type="checkbox" id="ed-gym" ${hasGym ? "checked" : ""}> Went to the gym</label></div>
-    <div id="ed-gym-rows" class="${hasGym ? "" : "hidden"}">
-      <div class="ed-row"><label>Top</label>${selectHtml("top", gymPick("top"), true, "gym")}</div>
-      <div class="ed-row"><label>Bottom</label>${selectHtml("bottom", gymPick("bottom"), true, "gym")}</div>
-      <div class="ed-row"><label>Shoes</label>${selectHtml("shoe", gymPick("shoe"), true, "gym")}</div>
-    </div>
-
     <div class="ed-actions">
       <button id="ed-save" class="btn primary">Save</button>
       ${log_has(ds) ? '<button id="ed-delete" class="btn secondary">Delete day</button>' : ""}
@@ -486,12 +473,11 @@ function renderEditor(ds, look, usesDress, changed, gym) {
     document.getElementById(rowsId).classList.toggle("hidden", !e.target.checked);
   });
   toggle("ed-changed", "ed-changed-rows");
-  toggle("ed-gym", "ed-gym-rows");
   document.getElementById("ed-resolve").addEventListener("click", () => resolveWriteIn(ds));
 
   document.getElementById("ed-dress").addEventListener("change", () => {
     const c = readEditor();
-    renderEditor(ds, { items: c.items, note: c.note }, c.usesDress, { items: c.changed }, { items: c.gym });
+    renderEditor(ds, { items: c.items, note: c.note }, c.usesDress, { items: c.changed });
   });
   document.getElementById("ed-save").addEventListener("click", saveEditor.bind(null, ds));
   const del = document.getElementById("ed-delete");
@@ -505,13 +491,12 @@ function openEditor(ds) {
   selectedDate = ds;
   buildCalendar();
   const looks = dayLooks(loadLog(), ds);
-  const isGym = (l) => l.kind === "gym" || l.items.every(id => (byId(id) || {}).cat === "workout");
-  const main = looks.find(l => !isGym(l) && l.kind !== "changed") || looks[0] || { items: [], note: "" };
-  const changed = looks.find(l => l.kind === "changed" && l !== main)
-               || looks.filter(l => l !== main && !isGym(l))[0] || { items: [] };
-  const gym = looks.find(isGym) || { items: [] };
+  // A day is what she wore, and optionally what she changed into later — a work outfit
+  // and then something else. Gym kit is worn but not tracked as an outfit.
+  const main = looks[0] || { items: [], note: "" };
+  const changed = looks[1] || { items: [] };
   const usesDress = main.items.some(id => (byId(id) || {}).cat === "dress");
-  renderEditor(ds, main, usesDress, changed, gym);
+  renderEditor(ds, main, usesDress, changed);
 }
 function saveEditor(ds) {
   const c = readEditor();
@@ -520,7 +505,6 @@ function saveEditor(ds) {
   // A day can hold more than one look: what she changed into, and what she wore to the gym.
   // Gym clothes are worn but are not an all-day outfit, so they are kept separate.
   if (c.changed.length) entries.push({ items: c.changed, note: "", source: "manual", kind: "changed" });
-  if (c.gym.length) entries.push({ items: c.gym, note: "", source: "manual", kind: "gym" });
   const log = loadLog();
   log[ds] = entries;
   saveLog(log); pushSync();
