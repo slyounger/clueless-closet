@@ -75,10 +75,16 @@ function weatherDesc(c) {
 // offer: false pieces are owned but never offered as part of a look — they are chosen
 // for function, not as an all-day outfit (rain jacket, swimsuits).
 const items = (cat) => WARDROBE.filter(i => i.cat === cat && i.offer !== false);
+// Which wardrobe is in rotation. The generator only suggests from this; the calendar editor
+// still lists everything, so a teaching day can be logged before that capsule is switched on.
+const CAPSULE_KEY = "clueless_closet_capsule_v1";
+function activeCapsule() { return localStorage.getItem(CAPSULE_KEY) || "maine"; }
+function setActiveCapsule(c) { localStorage.setItem(CAPSULE_KEY, c); }
+const capsulePool = (cat) => items(cat).filter(i => (i.capsules || []).includes(activeCapsule()));
 // Layers = true layers PLUS tops flagged canLayer (e.g. rugby worn open over a tank).
 // A canLayer top is returned as a layer-role copy so it labels/sorts as a Layer; its id is unchanged for logging.
-const layerPool = () => items("layer").concat(
-  WARDROBE.filter(i => i.cat === "top" && i.canLayer).map(i => ({ ...i, cat: "layer" })));
+const layerPool = () => capsulePool("layer").concat(
+  capsulePool("top").filter(i => i.canLayer).map(i => ({ ...i, cat: "layer" })));
 // Shannon doesn't wear navy and black together, anywhere — flag any outfit that has both (incl. shoes/hats).
 function hasNavyBlackClash(pieces) {
   return pieces.some(p => p.navy) && pieces.some(p => p.black);
@@ -99,7 +105,7 @@ function allowedShoes(weather, o, dateStr) {
   const ds = dateStr || todayStr();
   const sneakerOK = isWeekend(ds) || ds <= SNEAKER_FREE_UNTIL;   // Sat/Sun, or the temporary free window
   const raining = weather.rainingNow || weather.rainChance >= 50;
-  return items("shoe").filter(s => {
+  return capsulePool("shoe").filter(s => {
     if (s.sneaker && !sneakerOK && !(o.workout && s.athletic)) return false;
     if (raining && !s.rain) return false;
     return true;
@@ -112,11 +118,18 @@ function wantsLayer(weather, o) {
 }
 function tonesOf(list) {
   const t = new Set();
-  // tone may be a single value or a pair — a green-and-white shirt reads as both light and bright.
+  let hasBlue = false;
+  // A tone may be a single value or a pair — the green-and-white poplin reads light AND bright.
   list.forEach(i => {
     if (!i || !i.tone) return;
-    (Array.isArray(i.tone) ? i.tone : [i.tone]).forEach(x => { if (x !== "neutral") t.add(x); });
+    (Array.isArray(i.tone) ? i.tone : [i.tone]).forEach(x => {
+      if (x === "blue") { hasBlue = true; return; }   // resolved below, once the rest is known
+      if (x !== "neutral") t.add(x);
+    });
   });
+  // Blue takes its reading from the company it keeps: alongside something else dark it plays
+  // the bright; with nothing else dark it is the dark.
+  if (hasBlue) t.add(t.has("dark") ? "bright" : "dark");
   return t;
 }
 function paletteScore(list) {
@@ -136,15 +149,15 @@ function buildCandidate(weather, o, log, dislikes) {
   if (o.workout) {
     pieces.push(pick(workoutTops()));
     pieces.push(pick(workoutBottoms()));
-    if (Math.random() < 0.4) pieces.push(pick(items("layer").filter(l => l.sub === "sweatshirt")));
+    if (Math.random() < 0.4) pieces.push(pick(capsulePool("layer").filter(l => l.sub === "sweatshirt")));
   } else {
     const useDress = o.mode === "dress" ||
-      (o.mode !== "separates" && Math.random() < 0.28 && items("dress").length);
+      (o.mode !== "separates" && Math.random() < 0.28 && capsulePool("dress").length);
     if (useDress) {
-      pieces.push(pick(items("dress")));
+      pieces.push(pick(capsulePool("dress")));
     } else {
-      pieces.push(pick(items("top")));
-      pieces.push(pick(items("bottom").filter(b => !raining || b.rain)));
+      pieces.push(pick(capsulePool("top")));
+      pieces.push(pick(capsulePool("bottom").filter(b => !raining || b.rain)));
     }
     if (wantsLayer(weather, o)) {
       const topId = (pieces.find(p => p.cat === "top") || {}).id;
@@ -156,7 +169,7 @@ function buildCandidate(weather, o, log, dislikes) {
   let shoes = allowedShoes(weather, o, o.dateStr);
   if (o.workout) { const ath = shoes.filter(s => s.athletic || s.sneaker || s.id === "shoe-cow"); if (ath.length) shoes = ath; }
   if (shoes.length) pieces.push(pick(shoes));
-  if (!o.workout && Math.random() < 0.18) pieces.push(pick(items("hat")));  // hat is an occasional accent, not daily
+  if (!o.workout && Math.random() < 0.18) pieces.push(pick(capsulePool("hat")));  // hat is an occasional accent, not daily
 
   pieces = pieces.filter(Boolean);
   const freshness = pieces.reduce((a, p) => a + Math.min(daysSinceWorn(p.id, log), 30), 0) / pieces.length;
@@ -178,10 +191,10 @@ function swapPiece(outfit, cat, weather, o) {
   const log = loadLog();
   let pool;
   if (cat === "shoe") pool = allowedShoes(weather, o, o.dateStr);
-  else if (cat === "bottom") pool = items("bottom").filter(b => !(weather.rainingNow || weather.rainChance >= 50) || b.rain);
+  else if (cat === "bottom") pool = capsulePool("bottom").filter(b => !(weather.rainingNow || weather.rainChance >= 50) || b.rain);
   else if (cat === "layer") pool = layerPool();
   else if (cat === "workout") pool = outfit.pieces.find(p => p.cat === "workout" && p.sub === "top") ? workoutTops() : workoutBottoms();
-  else pool = items(cat);
+  else pool = capsulePool(cat);
   const cur = outfit.pieces.find(p => p.cat === cat);
   pool = pool.filter(p => p.id !== (cur || {}).id && (cat !== "workout" || p.sub === cur.sub));
   pool = pool.filter(p => !outfit.pieces.some(x => x !== cur && x.id === p.id));   // no dup (e.g. rugby as both top + layer)
@@ -274,56 +287,91 @@ function buildCalendar() {
   document.getElementById("calendar").innerHTML = html;
   document.querySelectorAll(".cal-cell[data-date]").forEach(c => c.addEventListener("click", () => openEditor(c.dataset.date)));
 }
-function selectHtml(cat, chosen, includeBlank) {
-  // Workout pieces sort into the row that matches what they are: tanks under Top, leggings/shorts under Bottom.
-  const list =
-    cat === "top"    ? WARDROBE.filter(i => i.cat === "top" || (i.cat === "workout" && i.sub === "top"))
-  : cat === "bottom" ? WARDROBE.filter(i => i.cat === "bottom" || (i.cat === "workout" && i.sub === "bottom"))
-  : items(cat);
+function selectHtml(cat, chosen, includeBlank, look) {
+  const L = look || "main";
+  // Gym rows draw only from workout pieces and athletic shoes; the main look never offers them.
+  const list = L === "gym"
+    ? (cat === "top" ? workoutTops()
+     : cat === "bottom" ? workoutBottoms()
+     : cat === "shoe" ? items("shoe").filter(s => s.athletic || s.sneaker) : [])
+    : items(cat);
   const opts = (includeBlank ? [`<option value="">— none —</option>`] : [])
     .concat(list.map(i => `<option value="${i.id}" ${i.id === chosen ? "selected" : ""}>${i.name}</option>`));
-  return `<select data-cat="${cat}">${opts.join("")}</select>`;
+  return `<select data-cat="${cat}" data-look="${L}">${opts.join("")}</select>`;
 }
 function readEditor() {
-  const ids = [];
-  document.querySelectorAll("#editor select").forEach(s => { if (s.value) ids.push(s.value); });
+  const grab = (look) => {
+    const ids = [];
+    document.querySelectorAll(`#editor select[data-look="${look}"]`).forEach(s => { if (s.value) ids.push(s.value); });
+    return ids;
+  };
+  const on = (id) => { const el = document.getElementById(id); return !!(el && el.checked); };
   const noteEl = document.getElementById("ed-note");
-  const usesDress = document.getElementById("ed-dress").checked;
-  return { items: ids, note: noteEl ? noteEl.value : "", usesDress };
+  return {
+    items: grab("main"),
+    changed: on("ed-changed") ? grab("changed") : [],
+    gym: on("ed-gym") ? grab("gym") : [],
+    note: noteEl ? noteEl.value : "",
+    usesDress: on("ed-dress"),
+  };
 }
-function renderEditor(ds, look, usesDress, extraLooks) {
+function renderEditor(ds, look, usesDress, changed, gym) {
   const el = document.getElementById("editor");
-  const val = (cat) => (look.items.find(id => (byId(id) || {}).cat === cat) || "");
-  const inRow = (id, cat) => { const i = byId(id) || {}; return i.cat === cat || (i.cat === "workout" && i.sub === cat); };
-  const valTop = look.items.find(id => inRow(id, "top")) || "";
-  const valBottom = look.items.find(id => inRow(id, "bottom")) || "";
+  const pick = (src, cat) => ((src && src.items) || []).find(id => (byId(id) || {}).cat === cat) || "";
+  const gymPick = (cat) => ((gym && gym.items) || []).find(id => {
+    const i = byId(id) || {};
+    return cat === "shoe" ? i.cat === "shoe" : (i.cat === "workout" && i.sub === cat);
+  }) || "";
+  const val = (cat) => pick(look, cat);
   const dateLbl = new Date(ds + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
-  let extra = "";
-  if (extraLooks && extraLooks.length) {
-    extra = `<div class="ed-extra"><strong>Also worn (look 2):</strong> ` +
-      extraLooks[0].items.map(id => (byId(id) || {}).name).filter(Boolean).join(", ") + `</div>`;
-  }
+  const hasChanged = !!(changed && changed.items && changed.items.length);
+  const hasGym = !!(gym && gym.items && gym.items.length);
+
+  const rows = (lk, dress) => `
+    <div class="ed-row"><label>${dress ? "Dress" : "Top"}</label>${dress ? selectHtml("dress", pick(lk, "dress"), false) : selectHtml("top", pick(lk, "top"), false)}</div>
+    ${dress ? "" : `<div class="ed-row"><label>Bottom</label>${selectHtml("bottom", pick(lk, "bottom"), false)}</div>`}
+    <div class="ed-row"><label>Layer</label>${selectHtml("layer", pick(lk, "layer"), true)}</div>
+    <div class="ed-row"><label>Shoes</label>${selectHtml("shoe", pick(lk, "shoe"), true)}</div>
+    <div class="ed-row"><label>Hat</label>${selectHtml("hat", pick(lk, "hat"), true)}</div>`;
+
   el.innerHTML = `
     <h3>${dateLbl}</h3>
-    <div class="ed-row"><label>${usesDress ? "Dress" : "Top"}</label>${usesDress ? selectHtml("dress", val("dress"), false) : selectHtml("top", valTop, false)}</div>
-    ${usesDress ? "" : `<div class="ed-row"><label>Bottom</label>${selectHtml("bottom", valBottom, false)}</div>`}
-    <div class="ed-row"><label>Layer</label>${selectHtml("layer", val("layer"), true)}</div>
-    <div class="ed-row"><label>Shoes</label>${selectHtml("shoe", val("shoe"), true)}</div>
-    <div class="ed-row"><label>Hat</label>${selectHtml("hat", val("hat"), true)}</div>
-    <div class="ed-row"><label>Jacket</label>${selectHtml("outer", val("outer"), true)}</div>
+    ${rows(look, usesDress)}
     <div class="ed-toggle"><label><input type="checkbox" id="ed-dress" ${usesDress ? "checked" : ""}> Dress day</label></div>
     <div class="ed-row"><label>Note</label><input type="text" id="ed-note" placeholder="what did / didn't work" value="${(look.note || "").replace(/"/g, "&quot;")}"></div>
-    ${extra}
+
+    <div class="ed-toggle"><label><input type="checkbox" id="ed-changed" ${hasChanged ? "checked" : ""}> Changed into something else</label></div>
+    <div id="ed-changed-rows" class="${hasChanged ? "" : "hidden"}">
+      <div class="ed-row"><label>Top</label>${selectHtml("top", pick(changed, "top"), true, "changed")}</div>
+      <div class="ed-row"><label>Bottom</label>${selectHtml("bottom", pick(changed, "bottom"), true, "changed")}</div>
+      <div class="ed-row"><label>Layer</label>${selectHtml("layer", pick(changed, "layer"), true, "changed")}</div>
+      <div class="ed-row"><label>Shoes</label>${selectHtml("shoe", pick(changed, "shoe"), true, "changed")}</div>
+    </div>
+
+    <div class="ed-toggle"><label><input type="checkbox" id="ed-gym" ${hasGym ? "checked" : ""}> Went to the gym</label></div>
+    <div id="ed-gym-rows" class="${hasGym ? "" : "hidden"}">
+      <div class="ed-row"><label>Top</label>${selectHtml("top", gymPick("top"), true, "gym")}</div>
+      <div class="ed-row"><label>Bottom</label>${selectHtml("bottom", gymPick("bottom"), true, "gym")}</div>
+      <div class="ed-row"><label>Shoes</label>${selectHtml("shoe", gymPick("shoe"), true, "gym")}</div>
+    </div>
+
     <div class="ed-actions">
       <button id="ed-save" class="btn primary">Save</button>
       ${log_has(ds) ? '<button id="ed-delete" class="btn secondary">Delete day</button>' : ""}
     </div>`;
   el.classList.add("open");
-  document.getElementById("ed-dress").addEventListener("change", () => {
-    const cur = readEditor();
-    renderEditor(ds, { items: cur.items, note: cur.note }, cur.usesDress, extraLooks);
+
+  const toggle = (box, rowsId) => document.getElementById(box).addEventListener("change", e => {
+    document.getElementById(rowsId).classList.toggle("hidden", !e.target.checked);
   });
-  document.getElementById("ed-save").addEventListener("click", () => saveEditor(ds, extraLooks));
+  toggle("ed-changed", "ed-changed-rows");
+  toggle("ed-gym", "ed-gym-rows");
+
+  document.getElementById("ed-dress").addEventListener("change", () => {
+    const c = readEditor();
+    renderEditor(ds, { items: c.items, note: c.note }, c.usesDress, { items: c.changed }, { items: c.gym });
+  });
+  document.getElementById("ed-save").addEventListener("click", saveEditor.bind(null, ds));
   const del = document.getElementById("ed-delete");
   if (del) del.addEventListener("click", () => {
     const l = loadLog(); delete l[ds]; saveLog(l); pushSync();
@@ -335,16 +383,23 @@ function openEditor(ds) {
   selectedDate = ds;
   buildCalendar();
   const looks = dayLooks(loadLog(), ds);
-  const first = looks[0] || { items: [], note: "" };
-  const usesDress = first.items.some(id => (byId(id) || {}).cat === "dress");
-  renderEditor(ds, first, usesDress, looks.slice(1));
+  const isGym = (l) => l.kind === "gym" || l.items.every(id => (byId(id) || {}).cat === "workout");
+  const main = looks.find(l => !isGym(l) && l.kind !== "changed") || looks[0] || { items: [], note: "" };
+  const changed = looks.find(l => l.kind === "changed" && l !== main)
+               || looks.filter(l => l !== main && !isGym(l))[0] || { items: [] };
+  const gym = looks.find(isGym) || { items: [] };
+  const usesDress = main.items.some(id => (byId(id) || {}).cat === "dress");
+  renderEditor(ds, main, usesDress, changed, gym);
 }
-function saveEditor(ds, extraLooks) {
+function saveEditor(ds) {
   const c = readEditor();
   if (!c.items.length) { alert("Pick at least one item."); return; }
+  const entries = [{ items: c.items, note: c.note, source: "manual", kind: "day" }];
+  // A day can hold more than one look: what she changed into, and what she wore to the gym.
+  // Gym clothes are worn but are not an all-day outfit, so they are kept separate.
+  if (c.changed.length) entries.push({ items: c.changed, note: "", source: "manual", kind: "changed" });
+  if (c.gym.length) entries.push({ items: c.gym, note: "", source: "manual", kind: "gym" });
   const log = loadLog();
-  const entries = [{ items: c.items, note: c.note, source: "manual" }];
-  (extraLooks || []).forEach(l => entries.push(l));   // preserve a second look if the day had one
   log[ds] = entries;
   saveLog(log); pushSync();
   document.getElementById("editor").classList.remove("open");
