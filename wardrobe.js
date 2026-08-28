@@ -78,17 +78,17 @@ const WARDROBE = [
   { id: "hat-red",             name: "Red cap",                        cat: "hat", tone: "bright", rain: true, capsules: ["maine"] },
   { id: "hat-maroon",          name: "Maroon cap",                     cat: "hat", tone: "bright", rain: true, capsules: ["maine"] },
 
-  // ---- TEACHING (fall 2026) — captured from what Shannon actually taught in.
+  // ---- TEACHING 2026 (fall) — captured from what Shannon actually taught in.
   //      warmth/rain are first guesses; correct them as you go.
-  { id: "top-vintage-sweater",  name: "Black, tan & white vintage short-sleeve sweater", cat: "top", sub: "sweater", tone: ["light", "dark"], warmth: 3, rain: true, black: true, capsules: ["teaching"] },
-  { id: "bot-black-wideleg",    name: "Black wide-leg pants",             cat: "bottom", sub: "pants", tone: "dark",  warmth: 3, rain: true, black: true, capsules: ["teaching"] },
-  { id: "layer-blue-blazer",    name: "Blue blazer",                      cat: "layer", sub: "blazer", tone: "blue",  warmth: 3, rain: true, capsules: ["teaching"] },
-  { id: "layer-denim-vest",     name: "Madewell denim vest",              cat: "layer", sub: "vest",   tone: "neutral", warmth: 2, rain: true, capsules: ["teaching"] },
-  { id: "dress-choir",          name: "White & black choir dress",        cat: "dress", tone: ["light", "dark"], warmth: 2, rain: true, black: true, capsules: ["teaching"] },
-  { id: "shoe-black-heels",     name: "Black heels",                      cat: "shoe", tone: "dark",    rain: false, black: true, capsules: ["teaching"] },
-  { id: "shoe-witch-flats",     name: "Black witch flats",                cat: "shoe", tone: "dark",    rain: false, black: true, capsules: ["teaching"] },
-  { id: "shoe-moccasin-loafers",name: "Black Maine moccasin loafers",     cat: "shoe", tone: "dark",    rain: true,  black: true, capsules: ["teaching"] },
-  { id: "shoe-leopard-flats",   name: "Leopard flats",                    cat: "shoe", tone: "neutral", rain: false, capsules: ["teaching"] },
+  { id: "top-vintage-sweater",  name: "Black, tan & white vintage short-sleeve sweater", cat: "top", sub: "sweater", tone: ["light", "dark"], warmth: 3, rain: true, black: true, capsules: ["teaching2026"] },
+  { id: "bot-black-wideleg",    name: "Black wide-leg pants",             cat: "bottom", sub: "pants", tone: "dark",  warmth: 3, rain: true, black: true, capsules: ["teaching2026"] },
+  { id: "layer-blue-blazer",    name: "Blue blazer",                      cat: "layer", sub: "blazer", tone: "blue",  warmth: 3, rain: true, capsules: ["teaching2026"] },
+  { id: "layer-denim-vest",     name: "Madewell denim vest",              cat: "layer", sub: "vest",   tone: "neutral", warmth: 2, rain: true, capsules: ["teaching2026"] },
+  { id: "dress-choir",          name: "White & black choir dress",        cat: "dress", tone: ["light", "dark"], warmth: 2, rain: true, black: true, capsules: ["teaching2026"] },
+  { id: "shoe-black-heels",     name: "Black heels",                      cat: "shoe", tone: "dark",    rain: false, black: true, capsules: ["teaching2026"] },
+  { id: "shoe-witch-flats",     name: "Black witch flats",                cat: "shoe", tone: "dark",    rain: false, black: true, capsules: ["teaching2026"] },
+  { id: "shoe-moccasin-loafers",name: "Black Maine moccasin loafers",     cat: "shoe", tone: "dark",    rain: true,  black: true, capsules: ["teaching2026"] },
+  { id: "shoe-leopard-flats",   name: "Leopard flats",                    cat: "shoe", tone: "neutral", rain: false, capsules: ["teaching2026"] },
 ];
 
 if (typeof module !== "undefined") module.exports = { WARDROBE };
