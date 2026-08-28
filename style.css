@@ -111,3 +111,14 @@ h1 span { color: var(--pink); }
 .ed-actions { display: flex; gap: 10px; margin-top: 6px; }
 
 footer { text-align: center; font-size: 12px; color: var(--muted); margin-top: 26px; font-style: italic; }
+
+/* write-in capture */
+.ed-writein { margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px solid var(--line, #e3e3e3); }
+.ed-writein label { display: block; font-weight: 600; margin-bottom: 4px; }
+.ed-writein input { width: 100%; padding: 8px; margin-bottom: 6px; box-sizing: border-box; }
+.wi-row { padding: 5px 0; font-size: 0.95em; }
+.wi-row select { margin-left: 6px; }
+.wi-new { color: var(--accent, #b0006a); }
+#ed-resolved { margin: 8px 0; }
+.capsule-pick { display: block; margin-bottom: 8px; font-size: 0.9em; }
+.capsule-pick select { margin-left: 6px; padding: 3px 6px; }

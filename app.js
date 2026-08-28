@@ -74,12 +74,32 @@ function weatherDesc(c) {
 // ---------- helpers ----------
 // offer: false pieces are owned but never offered as part of a look — they are chosen
 // for function, not as an all-day outfit (rain jacket, swimsuits).
-const items = (cat) => WARDROBE.filter(i => i.cat === cat && i.offer !== false);
+// ---------- the closet ----------
+// WARDROBE is the checked-in list. Pieces added by typing them in live in localStorage until
+// they get folded into wardrobe.js, so a new garment is wearable the day it is first worn.
+const CUSTOM_KEY = "clueless_closet_custom_items_v1";
+function customItems() { try { return JSON.parse(localStorage.getItem(CUSTOM_KEY)) || []; } catch { return []; } }
+function addCustomItem(it) { const c = customItems(); c.push(it); localStorage.setItem(CUSTOM_KEY, JSON.stringify(c)); }
+const CLOSET = () => WARDROBE.concat(customItems());
+
+const items = (cat) => CLOSET().filter(i => i.cat === cat && i.offer !== false);
 // Which wardrobe is in rotation. The generator only suggests from this; the calendar editor
 // still lists everything, so a teaching day can be logged before that capsule is switched on.
 const CAPSULE_KEY = "clueless_closet_capsule_v1";
 function activeCapsule() { return localStorage.getItem(CAPSULE_KEY) || "maine"; }
 function setActiveCapsule(c) { localStorage.setItem(CAPSULE_KEY, c); }
+function allCapsules() {
+  const set = new Set();
+  CLOSET().forEach(i => (i.capsules || []).forEach(c => set.add(c)));
+  return [...set].sort();
+}
+function initCapsulePicker() {
+  const el = document.getElementById("capsule");
+  if (!el) return;
+  const cur = activeCapsule();
+  el.innerHTML = allCapsules().map(c => `<option value="${c}" ${c === cur ? "selected" : ""}>${c}</option>`).join("");
+  el.addEventListener("change", () => { setActiveCapsule(el.value); newOutfit(); });
+}
 const capsulePool = (cat) => items(cat).filter(i => (i.capsules || []).includes(activeCapsule()));
 // Layers = true layers PLUS tops flagged canLayer (e.g. rugby worn open over a tank).
 // A canLayer top is returned as a layer-role copy so it labels/sorts as a Layer; its id is unchanged for logging.
@@ -89,10 +109,26 @@ const layerPool = () => capsulePool("layer").concat(
 function hasNavyBlackClash(pieces) {
   return pieces.some(p => p.navy) && pieces.some(p => p.black);
 }
-const workoutTops = () => WARDROBE.filter(i => i.cat === "workout" && i.sub === "top");
-const workoutBottoms = () => WARDROBE.filter(i => i.cat === "workout" && i.sub === "bottom");
-const byId = (id) => WARDROBE.find(i => i.id === id);
+const workoutTops = () => CLOSET().filter(i => i.cat === "workout" && i.sub === "top");
+const workoutBottoms = () => CLOSET().filter(i => i.cat === "workout" && i.sub === "bottom");
+const byId = (id) => CLOSET().find(i => i.id === id);
 const pick = (arr) => arr[Math.floor(Math.random() * arr.length)];
+
+// Typed text -> a garment. Word overlap, so "cow shoes" finds "Cow-print shoes" and
+// "ali golden pants" finds "Black Ali Golden pleated pants".
+const words = (t) => (t || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").split(" ").filter(Boolean);
+function matchGarment(text) {
+  const q = words(text);
+  if (!q.length) return { hits: [] };
+  const scored = CLOSET().map(i => {
+    const n = words(i.name);
+    const hit = q.filter(w => n.some(x => x === w || x.startsWith(w))).length;
+    return { item: i, score: hit / q.length, hit };
+  }).filter(r => r.hit && r.score >= 0.6);
+  scored.sort((a, b) => b.score - a.score || words(a.item.name).length - words(b.item.name).length);
+  const top = scored.length ? scored[0].score : 0;
+  return { hits: scored.filter(r => r.score === top).map(r => r.item) };
+}
 function todayStr() {
   const d = new Date();
   return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
@@ -299,6 +335,57 @@ function selectHtml(cat, chosen, includeBlank, look) {
     .concat(list.map(i => `<option value="${i.id}" ${i.id === chosen ? "selected" : ""}>${i.name}</option>`));
   return `<select data-cat="${cat}" data-look="${L}">${opts.join("")}</select>`;
 }
+// Resolve a typed list into garments. Anything unrecognised is offered as a new piece so the
+// wardrobe fills in as things get worn, instead of needing an inventory session up front.
+const CATS = ["top", "bottom", "layer", "dress", "shoe", "scarf", "hat", "outer"];
+const TONES = ["dark", "light", "bright", "neutral", "blue"];
+function resolveWriteIn(ds) {
+  const raw = (document.getElementById("ed-writein").value || "").split(",").map(t => t.trim()).filter(Boolean);
+  const box = document.getElementById("ed-resolved");
+  if (!raw.length) { box.innerHTML = "<p class='hint'>Type what you wore, separated by commas.</p>"; return; }
+  box.innerHTML = raw.map((term, n) => {
+    const { hits } = matchGarment(term);
+    if (hits.length === 1) {
+      return `<div class="wi-row" data-term="${n}" data-id="${hits[0].id}">✓ ${hits[0].name}</div>`;
+    }
+    if (hits.length > 1) {
+      return `<div class="wi-row" data-term="${n}">${term} —
+        <select class="wi-pick">${hits.map(h => `<option value="${h.id}">${h.name}</option>`).join("")}</select></div>`;
+    }
+    return `<div class="wi-row wi-new" data-term="${n}" data-name="${term.replace(/"/g, "&quot;")}">
+      <strong>${term}</strong> — not in the closet yet
+      <select class="wi-cat">${CATS.map(c => `<option value="${c}">${c}</option>`).join("")}</select>
+      <select class="wi-tone">${TONES.map(t => `<option value="${t}">${t}</option>`).join("")}</select>
+      </div>`;
+  }).join("") + `<button id="ed-apply" class="btn primary">Add these to the day</button>`;
+  document.getElementById("ed-apply").addEventListener("click", () => applyWriteIn(ds));
+}
+
+function applyWriteIn(ds) {
+  const ids = [];
+  document.querySelectorAll("#ed-resolved .wi-row").forEach(row => {
+    if (row.dataset.id) { ids.push(row.dataset.id); return; }
+    const picker = row.querySelector(".wi-pick");
+    if (picker) { ids.push(picker.value); return; }
+    // a garment worn for the first time — record it, tagged to the capsule in rotation
+    const name = row.dataset.name;
+    const it = {
+      id: "own-" + name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "") + "-" + Date.now().toString(36),
+      name, cat: row.querySelector(".wi-cat").value, tone: row.querySelector(".wi-tone").value,
+      warmth: 2, rain: true, capsules: [activeCapsule()],
+    };
+    addCustomItem(it); ids.push(it.id);
+  });
+  if (!ids.length) return;
+  const log = loadLog();
+  const rest = (log[ds] || []).filter(l => l.kind === "changed" || l.kind === "gym");
+  log[ds] = [{ items: ids, note: "", source: "writein", kind: "day" }].concat(rest);
+  saveLog(log); pushSync();
+  document.getElementById("editor").classList.remove("open");
+  selectedDate = null;
+  buildCalendar();
+}
+
 function readEditor() {
   const grab = (look) => {
     const ids = [];
@@ -332,10 +419,17 @@ function renderEditor(ds, look, usesDress, changed, gym) {
     ${dress ? "" : `<div class="ed-row"><label>Bottom</label>${selectHtml("bottom", pick(lk, "bottom"), false)}</div>`}
     <div class="ed-row"><label>Layer</label>${selectHtml("layer", pick(lk, "layer"), true)}</div>
     <div class="ed-row"><label>Shoes</label>${selectHtml("shoe", pick(lk, "shoe"), true)}</div>
+    <div class="ed-row"><label>Scarf</label>${selectHtml("scarf", pick(lk, "scarf"), true)}</div>
     <div class="ed-row"><label>Hat</label>${selectHtml("hat", pick(lk, "hat"), true)}</div>`;
 
   el.innerHTML = `
     <h3>${dateLbl}</h3>
+    <div class="ed-writein">
+      <label>Write it in</label>
+      <input type="text" id="ed-writein" placeholder="black pleated pants, black brogues, cream nubby tank, berry scarf">
+      <button id="ed-resolve" class="btn secondary">Resolve</button>
+      <div id="ed-resolved"></div>
+    </div>
     ${rows(look, usesDress)}
     <div class="ed-toggle"><label><input type="checkbox" id="ed-dress" ${usesDress ? "checked" : ""}> Dress day</label></div>
     <div class="ed-row"><label>Note</label><input type="text" id="ed-note" placeholder="what did / didn't work" value="${(look.note || "").replace(/"/g, "&quot;")}"></div>
@@ -366,6 +460,7 @@ function renderEditor(ds, look, usesDress, changed, gym) {
   });
   toggle("ed-changed", "ed-changed-rows");
   toggle("ed-gym", "ed-gym-rows");
+  document.getElementById("ed-resolve").addEventListener("click", () => resolveWriteIn(ds));
 
   document.getElementById("ed-dress").addEventListener("change", () => {
     const c = readEditor();
@@ -479,6 +574,7 @@ function showTab(name) {
 document.addEventListener("DOMContentLoaded", async () => {
   const now = new Date(); calYear = now.getFullYear(); calMonth = now.getMonth();
 
+  initCapsulePicker();
   document.getElementById("reroll").addEventListener("click", newOutfit);
   document.getElementById("wear").addEventListener("click", wearIt);
   document.getElementById("feedback").addEventListener("click", giveFeedback);
