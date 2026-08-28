@@ -1,5 +1,7 @@
 // Clueless Closet — wardrobe data (mirrors Maine_wardrobe.docx)
 // tone: dark | light | bright | neutral   (Winter palette: aim for dark + light + bright)
+//   white = light, black = dark, navy = dark, red = bright. Blue depends on the outfit.
+// offer: false = owned, but never offered as part of a look (chosen for function, not looks)
 // warmth: 1 = coolest base ... higher = warmer   |   rain: true = fine in rain
 // sneaker: true = Sat/Sun only (unless athletic + workout day)
 // summer: true = distinctly a warm-weather piece (used for the seasonal swap; the others carry into fall)
@@ -20,7 +22,7 @@ const WARDROBE = [
   { id: "tee-gray-roadtripper",name: "Gray knit roadtripper tee",       cat: "top", sub: "tee", tone: "neutral", warmth: 2, rain: true, summer: true },
 
   // ---- TOPS: long sleeves (year-round / transitional) ----
-  { id: "ls-green-poplin",     name: "Green & white J.Crew mandarin poplin shirt", cat: "top", sub: "longsleeve", tone: "bright", warmth: 3, rain: true, overshirt: true },
+  { id: "ls-green-poplin",     name: "Green & white J.Crew mandarin poplin shirt", cat: "top", sub: "longsleeve", tone: ["light", "bright"], warmth: 3, rain: true, overshirt: true },
   { id: "ls-rugby",            name: "Blue & white rugby shirt",        cat: "top", sub: "longsleeve", tone: "bright", warmth: 3, rain: true, canLayer: true },
 
   // ---- LAYERS ----
@@ -47,24 +49,24 @@ const WARDROBE = [
 
   // ---- WORKOUT (only on a requested workout day) ----
   { id: "wk-tank-blue",        name: "Blue workout tank",              cat: "workout", sub: "top",    tone: "neutral", warmth: 1, rain: true },
-  { id: "wk-tank-red",         name: "Red workout tank",               cat: "workout", sub: "top",    tone: "neutral", warmth: 1, rain: true },
+  { id: "wk-tank-red",         name: "Red workout tank",               cat: "workout", sub: "top",    tone: "bright", warmth: 1, rain: true },
   { id: "wk-tank-flowy-blue",  name: "Blue flowy workout tank",        cat: "workout", sub: "top",    tone: "neutral", warmth: 1, rain: true },
   { id: "wk-leggings",         name: "Workout leggings",               cat: "workout", sub: "bottom", tone: "neutral", warmth: 2, rain: true },
   { id: "wk-shorts",           name: "Workout spandex shorts",         cat: "workout", sub: "bottom", tone: "neutral", warmth: 1, rain: true },
 
   // ---- SWIM ----
-  { id: "swim-1",              name: "Swimsuit 1",                     cat: "swim", tone: "neutral", rain: true, summer: true },
-  { id: "swim-2",              name: "Swimsuit 2",                     cat: "swim", tone: "neutral", rain: true, summer: true },
+  { id: "swim-1",              name: "Swimsuit 1",                     cat: "swim", tone: "neutral", rain: true, summer: true, offer: false },
+  { id: "swim-2",              name: "Swimsuit 2",                     cat: "swim", tone: "neutral", rain: true, summer: true, offer: false },
 
   // ---- SHOES ----  (sneaker: true = Sat/Sun only, unless athletic on a workout day)
   { id: "shoe-sneakers",     name: "Tennis shoes / sneakers",          cat: "shoe", tone: "neutral", rain: true,  sneaker: true, athletic: true },
   { id: "shoe-cow",          name: "Cow-print shoes",                  cat: "shoe", tone: "neutral", rain: true },
-  { id: "shoe-birks-black",  name: "Black Birkenstocks",               cat: "shoe", tone: "neutral", rain: true, black: true },
-  { id: "shoe-white-sandals",name: "White sandals",                    cat: "shoe", tone: "neutral", rain: false, summer: true },
-  { id: "shoe-black-sandals",name: "Black sandals",                    cat: "shoe", tone: "neutral", rain: false, summer: true, black: true },
+  { id: "shoe-birks-black",  name: "Black Birkenstocks",               cat: "shoe", tone: "dark", rain: true, black: true },
+  { id: "shoe-white-sandals",name: "White sandals",                    cat: "shoe", tone: "light", rain: false, summer: true },
+  { id: "shoe-black-sandals",name: "Black sandals",                    cat: "shoe", tone: "dark", rain: false, summer: true, black: true },
 
   // ---- OUTERWEAR (rain only) ----
-  { id: "outer-rain",     name: "Lightweight rain jacket",             cat: "outer", tone: "neutral", rain: true },
+  { id: "outer-rain",     name: "Lightweight rain jacket",             cat: "outer", tone: "neutral", rain: true, offer: false },
 
   // ---- HATS (optional accent) ----
   { id: "hat-black-grimpeurs", name: "Black Grimpeurs cap",            cat: "hat", tone: "dark",   rain: true, black: true },

@@ -110,7 +110,11 @@ function wantsLayer(weather, o) {
 }
 function tonesOf(list) {
   const t = new Set();
-  list.forEach(i => { if (i && i.tone && i.tone !== "neutral") t.add(i.tone); });
+  // tone may be a single value or a pair — a green-and-white shirt reads as both light and bright.
+  list.forEach(i => {
+    if (!i || !i.tone) return;
+    (Array.isArray(i.tone) ? i.tone : [i.tone]).forEach(x => { if (x !== "neutral") t.add(x); });
+  });
   return t;
 }
 function paletteScore(list) {
