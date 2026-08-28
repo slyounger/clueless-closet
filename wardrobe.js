@@ -42,7 +42,6 @@ const WARDROBE = [
   { id: "bot-black-skort",     name: "Athletic black skort",           cat: "bottom", sub: "skort",  tone: "dark",    warmth: 1, rain: true, summer: true, black: true },
   { id: "bot-black-leggings",  name: "Athletic black leggings",        cat: "bottom", sub: "leggings", tone: "dark",  warmth: 2, rain: true, black: true },
   { id: "bot-blue-jeans",      name: "Blue jeans",                     cat: "bottom", sub: "pants",  tone: "neutral", warmth: 3, rain: true },
-  { id: "bot-white-jeans",     name: "White denim jeans",              cat: "bottom", sub: "pants",  tone: "light",   warmth: 3, rain: true },
   { id: "bot-pistola",         name: "Blue Pistola wide-leg pants",    cat: "bottom", sub: "pants",  tone: "neutral", warmth: 3, rain: true },
   { id: "bot-green-track",     name: "Green track pants",              cat: "bottom", sub: "pants",  tone: "bright",  warmth: 3, rain: true },
 
