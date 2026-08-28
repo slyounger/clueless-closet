@@ -180,6 +180,9 @@ function swapPiece(outfit, cat, weather, o) {
   const cur = outfit.pieces.find(p => p.cat === cat);
   pool = pool.filter(p => p.id !== (cur || {}).id && (cat !== "workout" || p.sub === cur.sub));
   pool = pool.filter(p => !outfit.pieces.some(x => x !== cur && x.id === p.id));   // no dup (e.g. rugby as both top + layer)
+  // A swap must not sneak navy and black back together — the generator vetoes it, so this does too.
+  const rest = outfit.pieces.filter(x => x !== cur);
+  pool = pool.filter(p => !hasNavyBlackClash(rest.concat(p)));
   if (!pool.length) return outfit;
   pool.sort((a, b) => daysSinceWorn(b.id, log) - daysSinceWorn(a.id, log));
   const choice = pool[Math.floor(Math.random() * Math.min(4, pool.length))];
@@ -267,9 +270,11 @@ function buildCalendar() {
   document.querySelectorAll(".cal-cell[data-date]").forEach(c => c.addEventListener("click", () => openEditor(c.dataset.date)));
 }
 function selectHtml(cat, chosen, includeBlank) {
-  const list = cat === "top"
-    ? WARDROBE.filter(i => i.cat === "top" || i.cat === "workout")   // allow workout tanks as a "top" in the editor
-    : items(cat);
+  // Workout pieces sort into the row that matches what they are: tanks under Top, leggings/shorts under Bottom.
+  const list =
+    cat === "top"    ? WARDROBE.filter(i => i.cat === "top" || (i.cat === "workout" && i.sub === "top"))
+  : cat === "bottom" ? WARDROBE.filter(i => i.cat === "bottom" || (i.cat === "workout" && i.sub === "bottom"))
+  : items(cat);
   const opts = (includeBlank ? [`<option value="">— none —</option>`] : [])
     .concat(list.map(i => `<option value="${i.id}" ${i.id === chosen ? "selected" : ""}>${i.name}</option>`));
   return `<select data-cat="${cat}">${opts.join("")}</select>`;
@@ -284,7 +289,9 @@ function readEditor() {
 function renderEditor(ds, look, usesDress, extraLooks) {
   const el = document.getElementById("editor");
   const val = (cat) => (look.items.find(id => (byId(id) || {}).cat === cat) || "");
-  const valTop = look.items.find(id => ["top", "workout"].includes((byId(id) || {}).cat)) || "";
+  const inRow = (id, cat) => { const i = byId(id) || {}; return i.cat === cat || (i.cat === "workout" && i.sub === cat); };
+  const valTop = look.items.find(id => inRow(id, "top")) || "";
+  const valBottom = look.items.find(id => inRow(id, "bottom")) || "";
   const dateLbl = new Date(ds + "T00:00:00").toLocaleDateString("en-US", { weekday: "long", month: "short", day: "numeric" });
   let extra = "";
   if (extraLooks && extraLooks.length) {
@@ -294,7 +301,7 @@ function renderEditor(ds, look, usesDress, extraLooks) {
   el.innerHTML = `
     <h3>${dateLbl}</h3>
     <div class="ed-row"><label>${usesDress ? "Dress" : "Top"}</label>${usesDress ? selectHtml("dress", val("dress"), false) : selectHtml("top", valTop, false)}</div>
-    ${usesDress ? "" : `<div class="ed-row"><label>Bottom</label>${selectHtml("bottom", val("bottom"), false)}</div>`}
+    ${usesDress ? "" : `<div class="ed-row"><label>Bottom</label>${selectHtml("bottom", valBottom, false)}</div>`}
     <div class="ed-row"><label>Layer</label>${selectHtml("layer", val("layer"), true)}</div>
     <div class="ed-row"><label>Shoes</label>${selectHtml("shoe", val("shoe"), true)}</div>
     <div class="ed-row"><label>Hat</label>${selectHtml("hat", val("hat"), true)}</div>

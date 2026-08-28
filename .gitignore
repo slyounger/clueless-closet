@@ -1,4 +1,5 @@
+.DS_Store
 *.docx
 ~$*
-.DS_Store
+data/
 palettes.html
